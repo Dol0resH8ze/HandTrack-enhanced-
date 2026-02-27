@@ -1,25 +1,3 @@
-"""
-PHASE 3 — ASL Live Recognition
-────────────────────────────────
-Features:
-  - MODE 1 (COUNTING): Finger counting + sum for 1 or 2 hands
-  - MODE 2 (ASL):      Real-time ASL fingerspelling using your trained classifier.
-                       Hold a gesture ~1 sec to confirm a letter.
-                       SPACE = insert space between words
-                       ENTER = finalize and display phrase
-                       C     = clear everything
-
-Controls:
-  [TAB]    - Toggle COUNTING / ASL mode
-  [SPACE]  - Add a space (new word)
-  [ENTER]  - Finalize phrase
-  [C]      - Clear
-  [Q]      - Quit
-
-Requirements:
-  pip install opencv-python mediapipe scikit-learn
-"""
-
 import cv2
 import mediapipe as mp
 import pickle
@@ -27,12 +5,10 @@ import numpy as np
 import time
 import os
 
-# ─── CONFIG ────────────────────────────────────────────────────────────────────
-MODEL_FILE     = "asl_model.pkl"
+# config
 LABELS_FILE    = "asl_labels.pkl"
 HOLD_SECONDS   = 1.0
 MIN_CONFIDENCE = 0.6
-# ───────────────────────────────────────────────────────────────────────────────
 
 mp_hands   = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -115,14 +91,12 @@ def main():
                 for hl in result.multi_hand_landmarks:
                     mp_drawing.draw_landmarks(frame, hl, mp_hands.HAND_CONNECTIONS)
 
-            # Mode bar
+            # mode bar
             cv2.rectangle(frame, (0, 0), (w, 40), (20, 20, 20), -1)
             cv2.putText(frame, f" {mode}   [TAB] toggle / [SPACE] space / [ENTER] done / [C] clear",
                         (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1)
 
-            # ══════════════════════════════════════════════════════════════════
-            #  COUNTING MODE
-            # ══════════════════════════════════════════════════════════════════
+           # counting mode
             if mode == MODE_COUNTING:
                 total      = 0
                 hand_counts = []
@@ -136,57 +110,56 @@ def main():
                         total += cnt
 
                     for label, cnt, hl in hand_counts:
-                        # Blue filled circles on fingertips
+                        
                         for tip_id in [4, 8, 12, 16, 20]:
                             cx = int(hl.landmark[tip_id].x * w)
                             cy = int(hl.landmark[tip_id].y * h)
                             cv2.circle(frame, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
 
-                        # Number near wrist (white, same position as original)
+                        
                         cx = int(hl.landmark[0].x * w)
                         cy = int(hl.landmark[0].y * h)
                         if cnt > 0:
                             cv2.putText(frame, str(cnt),
                                         (cx - 90, cy - 30), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 3)
+                          
 
-                    # Sum centered at top when 2 hands
+               #sum 
                     if len(hand_counts) == 2:
                         cv2.putText(frame, f"Sum: {total}",
                                     (w // 2 - 50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 3)
 
                 
 
-            # ══════════════════════════════════════════════════════════════════
-            #  ASL MODE
-            # ══════════════════════════════════════════════════════════════════
+          # asl mode
             else:
-                # ── Key actions ───────────────────────────────────────────────
+                # key actions
                 if key == ord(' ') and not show_final:
-                    # Add space between words (avoid double spaces)
+                    # space between words
                     if phrase and phrase[-1] != ' ':
                         phrase.append(' ')
                     hold_start     = None
                     last_letter    = None
                     pending_letter = None
 
-                elif key == 13 and phrase:  # Enter — finalize
+                elif key == 13 and phrase:  # enter to finalizeeeeee
                     final_phrase = "".join(phrase).strip()
                     show_final   = True
                     phrase       = []
                     hold_start   = None
                     pending_letter = None
 
-                    # Save to txt and open it
+                    # save to txt and open it
                     txt_path = "asl_phrase.txt"
                     with open(txt_path, "w") as f:
                         f.write(final_phrase)
                     os.startfile(txt_path)
-                    # Close camera and window
+                    # close camera and window
                     cap.release()
                     cv2.destroyAllWindows()
                     return
 
-                # ── Letter detection ──────────────────────────────────────────
+                #  letter detection 
                 if not show_final and result.multi_hand_landmarks:
                     hl = result.multi_hand_landmarks[0]
                     letter, conf = predict_letter(model, labels, hl)
@@ -204,7 +177,7 @@ def main():
                         last_letter    = None
                         pending_letter = None
 
-                    # Confirm letter after hold
+                    # confirm letter after hold
                     if hold_start and pending_letter and (now - hold_start >= HOLD_SECONDS):
                         phrase.append(pending_letter)
                         hold_start     = None
@@ -216,9 +189,9 @@ def main():
                     last_letter    = None
                     pending_letter = None
 
-                # ── ASL UI ────────────────────────────────────────────────────
+                # ui
 
-                # Letter tracks the hand
+                # letter track
                 if pending_letter and not show_final and result.multi_hand_landmarks:
                     hl = result.multi_hand_landmarks[0]
                     cx = int(hl.landmark[0].x * w)
@@ -229,7 +202,7 @@ def main():
                     cv2.putText(frame, f"{int(pending_conf * 100)}%",
                                 (cx - 90, cy - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, conf_color, 2)
 
-                # Hold progress bar
+                #  progress bar
                 if hold_start and pending_letter:
                     elapsed  = now - hold_start
                     progress = min(elapsed / HOLD_SECONDS, 1.0)
@@ -238,18 +211,18 @@ def main():
                     cv2.putText(frame, f"Holding '{pending_letter}'  {int(progress * 100)}%",
                                 (10, h - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 200, 0), 2)
 
-                # Phrase buffer
+                # phrase buffer
                 phrase_str = "".join(phrase) if phrase else "(start signing)"
                 cv2.rectangle(frame, (0, h - 90), (w, h - 22), (20, 20, 20), -1)
                 cv2.putText(frame, phrase_str,
                             (10, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
 
-                # Final phrase display
+                # final phrase display
                 if show_final:
                     cv2.putText(frame, final_phrase,
                                 (10, h // 2), cv2.FONT_HERSHEY_DUPLEX, 1.6, (0, 255, 120), 3)
 
-            # Show frame
+            
             cv2.imshow("Hand Recognition | ASL + Counting", frame)
 
             if key == ord('q'):
