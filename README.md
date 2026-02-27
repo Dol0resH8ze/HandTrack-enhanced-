@@ -15,3 +15,13 @@ HOW TO USE:
 
 Requirements:
   pip install opencv-python mediapipe
+# PHASE 2 — ASL Classifier Trainer (v2 — engineered features)
+─────────────────────────────────────────────────────────────
+Reads asl_dataset.csv, engineers rich hand features, trains a
+GradientBoosting classifier, and saves asl_model.pkl + asl_labels.pkl.
+
+Run after collecting data:
+  python train.py
+
+Requirements:
+  pip install scikit-learn pandas numpy
