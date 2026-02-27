@@ -47,4 +47,4 @@ Requirements:
 
   # FEATURES.PY
 
-  now how do i start haha this file is the most interesting one becuase its purely maths , because it helps the machine separate between similar gestures like M/S/N etc.. with the help of vectors 
+  now how do i start haha this file is the most interesting one becuase its purely maths , because it helps the machine separate between similar gestures like M/S/N etc.. with the help of vectorial values 
