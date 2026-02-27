@@ -1,5 +1,5 @@
 # HandTrack-enhanced-
-FINALLY,  FULL ASL RECOGNITION 
+FINALLY,  FULL ASL RECOGNITION , READ ABOUT FEATURES.PY AT END 
 # PHASE 1 — ASL Data Collector
 ─────────────────────────────
 Records your hand landmarks for each ASL letter and saves them to asl_dataset.csv.
@@ -44,3 +44,7 @@ Controls:
 
 Requirements:
   pip install opencv-python mediapipe scikit-learn
+
+  # FEATURES.PY
+
+  now how do i start haha this file is the most interesting one becuase its purely maths , because it helps the machine separate between similar gestures like M/S/N etc.. with the help of vectors 
