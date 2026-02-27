@@ -1,25 +1,3 @@
-"""
-PHASE 1 — ASL Data Collector
-─────────────────────────────
-Records your hand landmarks for each ASL letter and saves them to asl_dataset.csv.
-
-HOW TO USE:
-  1. Run this script:       python 1_collect_data.py
-  2. Press a letter key (A-Z) to select which letter you want to record.
-  3. Hold your ASL gesture in front of the camera.
-  4. Press SPACE to capture a sample (aim for 30-50 samples per letter).
-  5. Repeat for all letters you want to recognize.
-  6. Press Q to quit and save.
-
-TIPS:
-  - Vary your hand position slightly between captures (slight rotation, distance).
-  - Good lighting helps MediaPipe track landmarks accurately.
-  - You can re-run this script to ADD more samples — it appends to the CSV.
-
-Requirements:
-  pip install opencv-python mediapipe
-"""
-
 import cv2
 import mediapipe as mp
 import csv
@@ -62,12 +40,11 @@ def main():
     flash_msg      = ""
     flash_until    = 0
 
-    # Open CSV (append mode)
+    #  CSV append mode
     file_exists = os.path.exists(OUTPUT_FILE)
     csv_file    = open(OUTPUT_FILE, "a", newline="")
     writer      = csv.writer(csv_file)
     if not file_exists:
-        # Write header: label + 63 landmark values (x0,y0,z0 ... x20,y20,z20)
         header = ["label"] + [f"{c}{i}" for i in range(21) for c in ("x", "y", "z")]
         writer.writerow(header)
 
@@ -87,7 +64,7 @@ def main():
             result = hands.process(rgb)
             h, w, _ = frame.shape
 
-            # Draw landmarks
+            # landmarks
             hand_detected = False
             hand_landmarks_data = None
             if result.multi_hand_landmarks:
@@ -99,8 +76,8 @@ def main():
                     mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2),
                 )
 
-            # ── UI ──────────────────────────────────────────────────────────
-            # Top bar
+           
+            # ui 
             cv2.rectangle(frame, (0, 0), (w, 45), (20, 20, 20), -1)
             cv2.putText(frame, "ASL Data Collector  |  Press letter key to select  |  SPACE = capture  |  Q = quit",
                         (8, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
@@ -124,18 +101,18 @@ def main():
                         (w - 75, 114), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
                         (200, 200, 200), 1)
 
-            # Flash message (after capture)
+            # flash message
             if time.time() < flash_until:
                 cv2.rectangle(frame, (0, h - 55), (w, h), (0, 120, 0), -1)
                 cv2.putText(frame, flash_msg,
                             (10, h - 18), cv2.FONT_HERSHEY_DUPLEX, 0.9, (255, 255, 255), 2)
 
-            # Sample count summary (bottom right)
+            # sample count 
             total = sum(sample_counts.values())
             cv2.putText(frame, f"Total samples: {total}",
                         (w - 220, h - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (150, 150, 150), 1)
 
-            # Letter grid showing progress
+            # progress grid
             grid_y = 110
             col    = 0
             for letter in LETTERS:
@@ -155,13 +132,12 @@ def main():
 
             cv2.imshow("ASL Data Collector", frame)
 
-            # ── Key handling ────────────────────────────────────────────────
             key = cv2.waitKey(1) & 0xFF
 
             if key == ord(']'):
                 break
             elif key == ord(' '):
-                # Capture sample
+                # capture sample
                 if current_letter and hand_landmarks_data:
                     row = [current_letter] + landmarks_to_row(hand_landmarks_data)
                     writer.writerow(row)
