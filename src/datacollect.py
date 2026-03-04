@@ -143,13 +143,13 @@ def main():
                     writer.writerow(row)
                     csv_file.flush()
                     sample_counts[current_letter] += 1
-                    flash_msg   = f" [+] Captured sample {sample_counts[current_letter]} for '{current_letter}'"
+                    flash_msg   = f" Captured sample {sample_counts[current_letter]} for '{current_letter}'"
                     flash_until = time.time() + 0.6
                 elif not current_letter:
-                    flash_msg   = "<< Select a letter first (press A-Z)"
+                    flash_msg   = " Select a letter first (press A-Z)"
                     flash_until = time.time() + 1.0
                 elif not hand_landmarks_data:
-                    flash_msg   = "<< No hand detected!"
+                    flash_msg   = " No hand detected!"
                     flash_until = time.time() + 1.0
             elif 97 <= key <= 122:  # a-z
                 current_letter = chr(key).upper()
